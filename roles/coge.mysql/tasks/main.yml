@@ -1,0 +1,51 @@
+---
+- name: Install MySQL packages
+  apt:
+    name: "{{item}}"
+    state: installed
+    update_cache: yes
+  with_items:
+    - mysql-server-5.6
+    - mysql-client-5.6
+    - python-mysqldb
+
+# grant all on `coge`.* to `coge`@localhost identified by '<password>';
+- name: Create coge database user
+  mysql_user:
+    name: coge
+    password: "{{ coge_mysql_pw }}"
+    priv: "*.*:ALL"
+    state: present
+
+- name: Create database 'coge'
+  mysql_db:
+    name: muscope
+    state: present
+    login_user: root
+    login_password:
+
+- name: Copy coge_mysql_schema.sql to VM
+  get_url:
+    url: http://genomevolution.org/coge/coge_mysql_schema.sql
+    dest: /tmp/coge_mysql_schema.sql
+    owner: vagrant
+    group: vagrant
+
+- name: Import coge schema
+  mysql_db:
+    name: coge
+    state: import
+    target: /tmp/coge_mysql_schema.sql
+
+- name: Copy coge_feature_types.sql to VM
+  get_url:
+    url: http://genomevolution.org/coge/coge_feature_types.sql
+    dest: /tmp/coge_feature_types.sql
+    owner: vagrant
+    group: vagrant
+
+- name: Import coge feature types
+  mysql_db:
+    name: coge
+    state: import
+    target: /tmp/coge_feature_types.sql

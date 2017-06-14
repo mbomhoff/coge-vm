@@ -1,0 +1,55 @@
+---
+- name: Install packages required by CoGe
+  apt:
+    name: "{{item}}"
+    state: installed
+    update_cache: yes
+  with_items:
+    - apache2
+    - aragorn
+    - blast2
+    - build-essential
+    - checkinstall
+    - expat
+    - gcc-multilib
+    - git
+    - graphviz
+    - imagemagick
+    - libdb-dev
+    - libgd2-xpm-dev
+    - libperl-dev
+    - libgd-gd2-perl
+    - libconfig-yaml-perl
+    - libssl-dev
+    - libzmq3-dev
+    - ncbi-blast+
+    - ncbi-blast+-legacy
+    - njplot
+    - python-dev
+    - python-numpy
+    - python-software-properties
+    - samtools
+    - swig
+    - sqlite3
+    - ttf-mscorefonts-installer
+    - ubuntu-dev-tools
+    - libapache-asp-perl
+    - libapache2-mod-perl2
+    - libapache2-mod-wsgi
+    - python-pip
+    - r-cran-plyr
+    - r-cran-reshape2
+    - r-cran-ggplot2
+    - nodejs
+    - npm
+    - libboost-all-dev
+    - python-glpk
+    - glpk-utils
+    - libgmp3-dev
+    - zimpl
+    - cpanminus
+
+- name: Create nodejs symlink
+  command: ln -sf /usr/bin/nodejs /usr/bin/node
+  become: yes
+  become_method: sudo

@@ -1,0 +1,4 @@
+*.retry
+.vagrant/
+
+coge_vars_local.yml

@@ -1,0 +1,87 @@
+---
+- name: Install git for ansible
+  package:
+    name: git
+    state: latest
+
+- name: Create /opt/apache2/coge
+  file:
+    path: /opt/apache2/coge
+    state: directory
+
+- name: Clone the coge repository
+  git:
+    repo: https://github.com/LyonsLab/coge.git
+    dest: /opt/apache2/coge
+    force: True
+    recursive: yes
+
+- name: Copy coge.conf
+  copy:
+    src: files/coge.conf
+    dest: /opt/apache2/coge/coge.conf
+
+- name: Populate coge.conf
+  lineinfile:
+    dest: /opt/apache2/coge/coge.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: 'DBPASS XXX', line: 'DBPASS {{coge_mysql_pw}}'}
+
+- name: Create system directories
+  file:
+    path: "{{item}}"
+    state: directory
+  with_items:
+    - /scratch/coge/cache/blast/db/
+    - /scratch/coge/cache/last/db/
+    - /scratch/coge/tmp/
+
+- name: Create tool directories
+  shell: ./setup.sh
+  args:
+    chdir: /opt/apache2/coge/web
+
+- name: Install Perl dependencies
+  shell: cat /opt/apache2/coge/modules.txt | xargs cpanm -notest
+  sudo: True
+
+- name: Install CoGe-specific modules
+  shell: ./make_perl.sh
+  args:
+    chdir: /opt/apache2/coge
+
+- name: Install Python dependencies
+  pip:
+    name: "{{item}}"
+  with_items:
+    - pyzmq
+    - matplotlib
+    - numpy
+    - seaborn
+    - natsort
+    - requests
+    - scipy
+    - sklearn
+  sudo: True
+
+- name: Install R dependencies
+  shell: echo "library.install(c('${item}')"| R --slave --no-save --no-restore-history
+  with_items:
+      - dplyr
+      - useful
+      - gridExtra
+  sudo: True
+
+- name: Install bower
+  npm:
+    name: bower
+    global: yes
+
+# FIXME: moment-timezone-data is no longer available causing this step to fail
+#- name: Install Javascript dependencies
+#  command: bower install
+#  args:
+#    chdir: /opt/apache2/coge
+#  become: no

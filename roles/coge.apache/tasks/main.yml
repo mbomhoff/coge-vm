@@ -1,0 +1,35 @@
+---
+- stat: path=/etc/apache2/sites-available/coge.conf
+  register: coge_conf
+
+- name: Configure Apache with coge-apache.conf
+  copy:
+    src: files/coge-apache.conf
+    dest: /etc/apache2/sites-available/coge.conf
+  when: coge_conf.stat.exists == False
+
+- name: Remove default Apache configuration
+  command: rm /etc/apache/sites-enabled/000-default.conf
+  when: coge_conf.stat.exists == False
+
+- name: Enable Apache modules
+  apache2_module:
+    state: present
+    name: "{{item}}"
+  with_items:
+      - rewrite
+      - headers
+      - proxy
+      - proxy_http
+      - expires
+      - perl
+
+- name: Enable coge site
+  file:
+    src: /etc/apache2/sites-available/coge.conf
+    dest: /etc/apache2/sites-enabled/coge.conf
+    state: link
+    force: yes
+
+- name: Restart Apache
+  service: name=apache2 state=restarted
