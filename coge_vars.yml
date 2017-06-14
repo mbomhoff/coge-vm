@@ -1,5 +1,5 @@
 ---
-# make a copy of this file called 'imicrobe_vars_local.yml'
+# make a copy of this file called 'coge_vars_local.yml'
 # and insert the missing information
 
 coge_mysql_pw:
